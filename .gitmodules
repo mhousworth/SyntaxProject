@@ -1,0 +1,3 @@
+[submodule "LexerProject"]
+	path = LexerProject
+	url = https://github.com/mhousworth/LexerProject.git
