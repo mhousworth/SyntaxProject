@@ -1,6 +1,7 @@
 #include <list>
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include "stdlib.h"
 #include <string>
 #include <fstream>
@@ -11,6 +12,11 @@
 // Flag for terminal print outs
 bool verbose = false;
 std::vector<std::string> printOut;
+
+// Symbol Table Data
+std::unordered_map<std::string, unsigned int> sym_table;
+unsigned int memory_address = 5000;
+
 
 std::string get_filename();
 void consolePrint();
