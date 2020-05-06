@@ -13,14 +13,27 @@
 bool verbose = false;
 std::vector<std::string> printOut;
 
-// Symbol Table Data
-std::unordered_map<std::string, unsigned int> sym_table;
+// Symbol Table Data, Key=Identifier, Data=Pair<MemoryAddress, Type>
+std::unordered_map<std::string, std::pair<unsigned int, std::string>> sym_table;
 unsigned int memory_address = 5000;
 
 
 std::string get_filename();
 void consolePrint();
 std::string formatTL(std::vector<std::pair<std::string, std::string>> *list, int *index);
+
+// Part 2 Requirements
+
+bool symbol_check(std::string id);
+void symbol_insert(std::string id);
+void symbol_printAll();
+
+// Part 2 Helper Function
+
+bool symbol_typeMatch(std::string id1, std::string id2);
+bool symbol_typeCheck(std::string id, std::string tp);
+std::string symbol_getType(std::string id);
+std::string symbol_getAddress(std::string id);
 
 bool S(std::vector<std::pair<std::string, std::string>> *list, int *index);
 bool D(std::vector<std::pair<std::string, std::string>> *list, int *index);
@@ -85,6 +98,41 @@ std::string formatTL(std::vector<std::pair<std::string, std::string>> *list, int
     char output[256] = {0};
     sprintf(output, "Token: %-12s Lexeme: %s\n", (*list)[*index].second.c_str(), (*list)[*index].first.c_str());
     return std::string(output);
+}
+
+// Returns true if identifier is already in the symbol table
+bool symbol_check(std::string id){
+
+}
+
+// Adds identifier to symbol table with the current open address, and increments open address
+void symbol_insert(std::string id){
+
+}
+
+// Prints all paired identifiers and memory addresses
+void symbol_printAll(){
+
+}
+
+// Returns true if both identifiers are the same type
+bool symbol_typeMatch(std::string id1, std::string id2){
+
+}
+
+// Returns true if the identifier matches the type
+bool symbol_typeCheck(std::string id, std::string tp){
+
+}
+
+// Returns identifier's defined type
+std::string symbol_getType(std::string id){
+
+}
+
+// Returns identifier's allocated address
+std::string symbol_getAddress(std::string id){
+
 }
 
 // Statement
