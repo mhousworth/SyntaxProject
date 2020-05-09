@@ -7,6 +7,7 @@
 #include <iostream>
 #include <sstream>
 #include "LexerProject/Lexer.h"
+#include <stack>
 
 // Flag for terminal print outs
 bool verbose = false;
@@ -26,6 +27,8 @@ bool T_P(std::vector<std::pair<std::string, std::string>> *list, int *index);
 bool F(std::vector<std::pair<std::string, std::string>> *list, int *index);
 bool NUM(std::vector<std::pair<std::string, std::string>> *list, int *index);
 bool TYPE(std::vector<std::pair<std::string, std::string>> *list, int *index);
+//NEW FUNCTION FOR PARSING 
+//void parse(std::vector<std::pair<std::string, std::string>> *list, int *index);
 
 int main(){
 
@@ -33,6 +36,9 @@ int main(){
     std::vector<std::pair<std::string, std::string>> lexemeToken;
 
     Lexer Lex;
+    
+    //added stack of pairs
+	std::stack<std::pair<std::string, std::string>>	stack1;	// symbol stack
 
     Lex.readFile(get_filename());
     // Lex.readFile("test.txt");
@@ -828,4 +834,55 @@ bool TYPE(std::vector<std::pair<std::string, std::string>> *list, int *index){
     
     return false;
 
+}
+
+void parse(std::vector<std::string> printOut, std::stack<std::pair<std::string, std::string>>&	stack1){
+    //int index = 0;
+    //int length = list.size();
+
+//set up symbols
+    enum Symbols {
+        // the symbols:
+        //needs work
+        // Terminal symbols:
+        TS_ID,
+        TS_TYPE,
+        TS_NUMBER,
+        TS_PLUS,
+        TS_MINUS,
+        TS_MULTIPLY,
+        TS_DIVIDE,
+        TS_L_PARENS,	// (
+        TS_R_PARENS,	// )
+        TS_SEMICOLON,		// a
+        TS_EOS,		// $, in this case corresponds to '\0'
+        TS_INVALID,	// invalid token
+
+        // Non-terminal symbols:
+        NTS_S,		// S
+        NTS_D,
+        NTS_A,
+        NTS_E,
+        NTS_Eprime,
+        NTS_T,
+        NTS_Tprime,
+        NTS_F,		// F
+    };
+//
+//setup parsing table
+
+std::map<Symbols, std::map<Symbols, int>> table;
+
+	std::stack<Symbols>	stack1;	// symbol stack
+    for (int i=0; i < printOut.size(); i++){
+
+
+//STEP 1 check if tos equals 
+     //if (printOut[i] == stack1.top())
+
+//STEP 2
+
+//STEP 3
+    //}
+    }
 }
