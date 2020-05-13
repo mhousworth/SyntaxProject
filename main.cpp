@@ -37,33 +37,33 @@
   */
 
 //set up symbols
-    enum Symbols {
-        // the symbols:
-        //needs work
-        // Terminal symbols:
-        TS_ID,
-        TS_TYPE,
-        TS_NUMBER,
-        TS_PLUS,
-        TS_MINUS,
-        TS_MULTIPLY,
-        TS_DIVIDE,
-        TS_L_PARENS,	// (
-        TS_R_PARENS,	// )
-        TS_SEMICOLON,		// a
-        TS_EOS,		// $, in this case corresponds to '\0'
-        TS_INVALID,	// invalid token
+enum Symbols {
+    // the symbols:
+    //needs work
+    // Terminal symbols:
+    TS_ID,
+    TS_TYPE,
+    TS_NUMBER,
+    TS_PLUS,
+    TS_MINUS,
+    TS_MULTIPLY,
+    TS_DIVIDE,
+    TS_L_PARENS,	// (
+    TS_R_PARENS,	// )
+    TS_SEMICOLON,		// a
+    TS_EOS,		// $, in this case corresponds to '\0'
+    TS_INVALID,	// invalid token
 
-        // Non-terminal symbols:
-        NTS_S,		// S
-        NTS_D,
-        NTS_A,
-        NTS_E,
-        NTS_Eprime,
-        NTS_T,
-        NTS_Tprime,
-        NTS_F,		// F
-    };
+    // Non-terminal symbols:
+    NTS_S,		// S
+    NTS_D,
+    NTS_A,
+    NTS_E,
+    NTS_Eprime,
+    NTS_T,
+    NTS_Tprime,
+    NTS_F,		// F
+};
   
 // Flag for terminal print outs
 bool verbose = false;
@@ -126,7 +126,7 @@ int main(){
     std::vector<Symbols> enumRules; //created for holding enums
     for(int i =0; i<length;i++ ){
         //create vector of enums representing the lexemtokens
-        enumRules.push_back(stringtoSymbol(lexemeToken[i].first));
+        enumRules.push_back(stringtoSymbol(lexemeToken[i]));
     }
 
     //SET UP PARSING TABLE
@@ -1007,30 +1007,34 @@ bool TYPE(std::vector<std::pair<std::string, std::string>> *list, int *index){
         NTS_F,		// F
     };
     */
-   Symbols stringtoSymbol(std::string input){
-        if (input=="S -> D" | input=="S -> A"){
-            return NTS_S;
-        }
-        else if (input=="A -> id = E"){
-            return NTS_A;
-        }
-        else if (input=="D -> type id"){
-            return NTS_D;
-        }
-        else if (input=="E -> TE'"){
-            return NTS_E;
-        }
-        else if (input=="E' -> +TE'"| input=="E' -> -TE" | input=="E'' -> epsilon"){
-            return NTS_Eprime;
-        }
-        else if (input=="T -> FT'"){
-            return NTS_T;
-        }
-        else if (input=="T' -> *FT'"| input=="T' -> /FT'" |input=="T' -> epsilon"){
-            return NTS_Tprime;
-        }
-        else if (input=="D -> type id"){
-            return NTS_F;
-        }
-   }
+
+Symbols stringtoSymbol(std::pair<std::string, std::string> input){
+
+    if (input.second == "identifier"){
+        return TS_ID;
+    }
+    else if ((input.first == "int") || (input.first == "float") || (input.first == "bool")){
+        return TS_TYPE;
+    }
+    else if ((input.second == "integer") || (input.second == "float")){
+        return TS_NUMBER;
+    }
+    else{
+        if (input.first == "+")
+            return TS_PLUS;
+        else if (input.first == "-")
+            return TS_MINUS;
+        else if (input.first == "*")
+            return TS_MULTIPLY;
+        else if (input.first == "/")
+            return TS_DIVIDE;
+        else if (input.first == "(")
+            return TS_L_PARENS;
+        else if (input.first == ")")
+            return TS_R_PARENS;
+        else if (input.first == ";")
+            return TS_SEMICOLON;
+    }
+
+}
    
