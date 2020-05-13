@@ -179,34 +179,80 @@ int main(){
                 switch (table[stack1.top()][stringtoSymbol(lexemeToken[index])])
                 {
                     case 1:	// 1. S → A
-					stack1.pop();
-					stack1.push(NTS_F);	// F
+					//stack1.pop();
+					//stack1.push(NTS_F);	// F
 					break;
 
 				    case 2:	// 2. S → D
 					stack1.pop();
-					stack1.push(TS_R_PARENS);	// )
-					stack1.push(NTS_F);		// F
-					stack1.push(TS_PLUS);	// +
-					stack1.push(NTS_S);		// S
-					stack1.push(TS_L_PARENS);	// (
+					stack1.push(NTS_D);		
+
 					break;
 
 				case 3:	// 3. D → TS_TYPE
 					stack1.pop();
-					stack1.push(TS_A);	// a
+					stack1.push(TS_TYPE);
 					break;
                 case 4: // 4. A → TS_ID
-                case 5: // 5. D → TS_TYPE
-                case 6: // 6. D → TS_TYPE
-                case 7: // 7. D → TS_TYPE
-                case 8: // 8. D → TS_TYPE
-                case 9: // 9. D → TS_TYPE
-                case 10: // 10. D → TS_TYPE
-                case 11: // 11. D → TS_TYPE
-                case 12: // 12. D → TS_TYPE
-                case 13: // 13. D → TS_TYPE
-                case 14: // 14.. D → TS_TYPE
+                    stack1.pop();
+					stack1.push(TS_ID);
+					break;
+
+                case 5: // 5. E → TE'
+                    stack1.pop();
+					stack1.push(NTS_T);
+                    stack1.push(NTS_Eprime);
+					break;
+
+                case 6: // 6. E' → +TE'
+                    stack1.pop();
+					stack1.push(TS_PLUS);
+                    stack1.push(NTS_T);
+                    stack1.push(NTS_Eprime);
+					break;
+
+                case 7: // 7. E' → -TE'
+                    stack1.pop();
+					stack1.push(TS_MINUS);
+                    stack1.push(NTS_T);
+                    stack1.push(NTS_Eprime);
+					break;
+
+                case 8: // 8. T → FT'
+                    stack1.pop();
+					stack1.push(NTS_F);
+                    stack1.push(NTS_Tprime);
+					break;
+
+                case 9: // 9.  T' → *FT'
+                    stack1.pop();
+                    stack1.push(TS_MULTIPLY);
+					stack1.push(NTS_F);
+                    stack1.push(NTS_Tprime);
+					break;
+                case 10: // 10.  T' → /FT'
+                    stack1.pop();
+                    stack1.push(TS_DIVIDE);
+					stack1.push(NTS_F);
+                    stack1.push(NTS_Tprime);
+					break;
+                case 11: // 11. F → TS_ID
+                    stack1.pop();
+                    stack1.push(TS_ID);
+					break;
+                case 12: // 12. F → TS_NUMBER
+                    stack1.pop();
+                    stack1.push(TS_NUMBER);
+					break;
+                case 13: // 13. F → (E)
+                    stack1.pop();
+                    stack1.push(TS_L_PARENS);
+                    stack1.push(NTS_E);
+                    stack1.push(TS_R_PARENS);
+					break;
+                case 14: // 14. EPSILON
+                    stack1.pop();
+					break;
                 
 
 				default:
