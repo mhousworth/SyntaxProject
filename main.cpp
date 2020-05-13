@@ -27,6 +27,7 @@ enum Symbols {
     TS_R_PARENS,	// )
     TS_SEMICOLON,	// ;
     TS_EOS,		    // $
+    TS_EQUAL,       // =
     TS_INVALID,	    // invalid token
 
     // Non-terminal symbols:
@@ -67,6 +68,8 @@ bool symbol_typeCheck(std::string id, std::string tp);
 std::string symbol_getType(std::string id);
 unsigned int symbol_getAddress(std::string id);
 
+Symbols stringtoSymbol(std::pair<std::string, std::string> input);
+
 bool S(std::vector<std::pair<std::string, std::string>> *list, int *index);
 bool D(std::vector<std::pair<std::string, std::string>> *list, int *index);
 bool A(std::vector<std::pair<std::string, std::string>> *list, int *index);
@@ -102,7 +105,6 @@ int main(){
 
     lexemeToken = Lex.getList();
 
-    int index = 0;
     int length = lexemeToken.size();
 
     // symbol_insert("a", "integer");
@@ -166,12 +168,26 @@ int main(){
 
 
 
-    int index=0;
+    int index = 0;
+
     while (stack1.size() > 0){
 
-            if((stringtoSymbol(lexemeToken[index])==stack1.top())){
+            if(stringtoSymbol(lexemeToken[index]) == stack1.top()){
                 std::cout << "Matched Symbols: " << stringtoSymbol(lexemeToken[index]) << std::endl;
                 index++;
+                stack1.pop();
+            }
+            else if (TS_EOS == stack1.top()){
+                // TODO: Check if there is more in the lexer to parse
+                if (index>=length){
+                    stack1.pop();
+                }
+                else
+                {
+                    stack1.push(NTS_S);
+                }
+                
+                // For now pop and end
                 stack1.pop();
             }
             else
@@ -189,67 +205,77 @@ int main(){
 					stack1.push(NTS_D);		
 					break;
 
-				case 3:	// 3. D → TS_TYPE
+				case 3:	// 3. D → type id;
 					stack1.pop();
+                    stack1.push(TS_SEMICOLON);
+                    stack1.push(TS_ID);
 					stack1.push(TS_TYPE);
 					break;
-                case 4: // 4. A → TS_ID
+                    
+                case 4: // 4. A → id = E;
                     stack1.pop();
+                    stack1.push(NTS_E);
+                    stack1.push(TS_EQUAL);
 					stack1.push(TS_ID);
 					break;
 
                 case 5: // 5. E → TE'
                     stack1.pop();
-					stack1.push(NTS_T);
                     stack1.push(NTS_Eprime);
+					stack1.push(NTS_T);
 					break;
 
                 case 6: // 6. E' → +TE'
                     stack1.pop();
-					stack1.push(TS_PLUS);
-                    stack1.push(NTS_T);
                     stack1.push(NTS_Eprime);
+                    stack1.push(NTS_T);
+					stack1.push(TS_PLUS);
 					break;
 
                 case 7: // 7. E' → -TE'
                     stack1.pop();
-					stack1.push(TS_MINUS);
-                    stack1.push(NTS_T);
                     stack1.push(NTS_Eprime);
+                    stack1.push(NTS_T);
+					stack1.push(TS_MINUS);
 					break;
 
                 case 8: // 8. T → FT'
                     stack1.pop();
-					stack1.push(NTS_F);
                     stack1.push(NTS_Tprime);
+					stack1.push(NTS_F);
 					break;
 
                 case 9: // 9.  T' → *FT'
                     stack1.pop();
-                    stack1.push(TS_MULTIPLY);
-					stack1.push(NTS_F);
                     stack1.push(NTS_Tprime);
+					stack1.push(NTS_F);
+                    stack1.push(TS_MULTIPLY);
 					break;
+
                 case 10: // 10.  T' → /FT'
                     stack1.pop();
-                    stack1.push(TS_DIVIDE);
-					stack1.push(NTS_F);
                     stack1.push(NTS_Tprime);
+					stack1.push(NTS_F);
+                    stack1.push(TS_DIVIDE);
 					break;
+
                 case 11: // 11. F → TS_ID
                     stack1.pop();
                     stack1.push(TS_ID);
 					break;
+
                 case 12: // 12. F → TS_NUMBER
                     stack1.pop();
                     stack1.push(TS_NUMBER);
 					break;
+
                 case 13: // 13. F → (E)
                     stack1.pop();
-                    stack1.push(TS_L_PARENS);
-                    stack1.push(NTS_E);
                     stack1.push(TS_R_PARENS);
+                    stack1.push(NTS_E);
+                    stack1.push(TS_L_PARENS);
 					break;
+
                 case 14: // 14. EPSILON
                     stack1.pop();
 					break;
@@ -1186,6 +1212,8 @@ Symbols stringtoSymbol(std::pair<std::string, std::string> input){
             return TS_L_PARENS;
         else if (input.first == ")")
             return TS_R_PARENS;
+        else if (input.first == "=")
+            return TS_EQUAL;
         else if (input.first == ";")
             return TS_SEMICOLON;
     }
