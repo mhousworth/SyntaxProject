@@ -178,15 +178,14 @@ int main(){
                 std::cout << "Rule " << table[stack1.top()][stringtoSymbol(lexemeToken[index])] << std::endl;
                 switch (table[stack1.top()][stringtoSymbol(lexemeToken[index])])
                 {
-                    case 1:	// 1. S → A
-					//stack1.pop();
-					//stack1.push(NTS_F);	// F
+                case 1:	// 1. S → A
+					stack1.pop();
+					stack1.push(NTS_A);
 					break;
 
-				    case 2:	// 2. S → D
+				case 2:	// 2. S → D
 					stack1.pop();
 					stack1.push(NTS_D);		
-
 					break;
 
 				case 3:	// 3. D → TS_TYPE
