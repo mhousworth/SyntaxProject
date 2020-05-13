@@ -58,6 +58,7 @@ std::string formatTL(std::vector<std::pair<std::string, std::string>> *list, int
 bool symbol_check(std::string id);
 void symbol_insert(std::string id, std::string type);
 void symbol_printAll();
+Symbols stringtoSymbol(std::pair<std::string, std::string> input);
 
 // Part 2 Helper Function
 
