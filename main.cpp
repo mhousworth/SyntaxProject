@@ -1,67 +1,42 @@
 #include <list>
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include "stdlib.h"
 #include <string>
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 #include "LexerProject/Lexer.h"
 #include <stack>
-
-//STRINGS
-/*
- // Terminal symbols:
-        std::string TS_ID= "TS_ID";
-        std::string TS_TYPE= "TS_TYPE";
-        std::string TS_NUMBER= "TS_NUMBER";
-        std::string TS_PLUS= "TS_PLUS";
-        std::string TS_MINUS = "TS_MINUS";
-        std::string TS_MULTIPLY ="TS_MULTIPLY";
-        std::string TS_DIVIDE = "TS_DIVIDE";
-        std::string TS_L_PARENS = "TS_L_PARENS";
-        std::string TS_R_PARENS = "TS_R_PARENS";
-        std::string TS_SEMICOLON = "TS_SEMICOLON";		// a
-        std::string TS_EOS = "TS_EOS";		// $, in this case corresponds to '\0'
-        std::string TS_INVALID = "TS_INVALID";	// invalid token
-
-        // Non-terminal symbols:
-        std::string NTS_S= "NTS_S";		// S
-        std::string NTS_D= "NTS_D";
-        std::string NTS_A= "NTS_A";
-        std::string NTS_E= "NTS_E";
-        std::string NTS_Eprime= "NTS_Eprime";
-        std::string NTS_T= "NTS_T";
-        std::string NTS_Tprime= "NTS_Tprime";
-        std::string NTS_F=	"NTS_F";	// F
-  */
 
 //set up symbols
 enum Symbols {
     // the symbols:
-    //needs work
+    // needs work
     // Terminal symbols:
     TS_ID,
     TS_TYPE,
     TS_NUMBER,
-    TS_PLUS,
-    TS_MINUS,
-    TS_MULTIPLY,
-    TS_DIVIDE,
+    TS_PLUS,        // +
+    TS_MINUS,       // -
+    TS_MULTIPLY,    // *
+    TS_DIVIDE,      // /
     TS_L_PARENS,	// (
     TS_R_PARENS,	// )
-    TS_SEMICOLON,		// a
-    TS_EOS,		// $, in this case corresponds to '\0'
-    TS_INVALID,	// invalid token
+    TS_SEMICOLON,	// ;
+    TS_EOS,		    // $
+    TS_INVALID,	    // invalid token
 
     // Non-terminal symbols:
     NTS_S,		// S
-    NTS_D,
-    NTS_A,
-    NTS_E,
-    NTS_Eprime,
-    NTS_T,
-    NTS_Tprime,
+    NTS_D,      // D
+    NTS_A,      // A
+    NTS_E,      // E
+    NTS_Eprime, // E`
+    NTS_T,      // T
+    NTS_Tprime, // T`
     NTS_F,		// F
 };
   
@@ -69,9 +44,27 @@ enum Symbols {
 bool verbose = false;
 std::vector<std::string> printOut;
 
+// Symbol Table Data, Key=Identifier, Data=Pair<MemoryAddress, Type>
+std::unordered_map<std::string, std::pair<unsigned int, std::string>> sym_table;
+unsigned int memory_address = 5000;
+
+
 std::string get_filename();
 void consolePrint();
 std::string formatTL(std::vector<std::pair<std::string, std::string>> *list, int *index);
+
+// Part 2 Requirements
+
+bool symbol_check(std::string id);
+void symbol_insert(std::string id, std::string type);
+void symbol_printAll();
+
+// Part 2 Helper Function
+
+bool symbol_typeMatch(std::string id1, std::string id2);
+bool symbol_typeCheck(std::string id, std::string tp);
+std::string symbol_getType(std::string id);
+unsigned int symbol_getAddress(std::string id);
 
 bool S(std::vector<std::pair<std::string, std::string>> *list, int *index);
 bool D(std::vector<std::pair<std::string, std::string>> *list, int *index);
@@ -99,20 +92,34 @@ int main(){
 
     Lexer Lex;
     
-    //added stack of pairs
-	std::stack<Symbols>	stack1;	// symbol stack
+    // Added Stack of Enum Symbols
+	std::stack<Symbols>	stack1;
 
     Lex.readFile(get_filename());
-    // Lex.readFile("test.txt");
-    // Lex.outputList();
+    Lex.readFile("test.txt");
+    Lex.outputList();
 
     lexemeToken = Lex.getList();
 
     int index = 0;
     int length = lexemeToken.size();
 
-    while((index < length) && S(&lexemeToken, &index));
+    // symbol_insert("a", "integer");
+    // symbol_insert("b", "boolean");
+    // symbol_insert("c", "integer");
 
+    // bool result = false;
+    // result = symbol_typeMatch("a", "c");
+    // result = symbol_typeMatch("a", "b");
+    // result = symbol_typeCheck("a", "integer");
+    // result = symbol_typeCheck("a", "boolean");
+
+    // std::cout << "a type: " + symbol_getType("a") + "\n";;
+    // std::cout << "a addr: " + std::to_string(symbol_getAddress("a")) + "\n";
+    // std::cout << "b type: " + symbol_getType("b") + "\n";
+    // std::cout << "b addr: " + std::to_string(symbol_getAddress("b")) + "\n";;
+
+    // symbol_printAll();
 
     //INITIALIZE STACK
     //
@@ -152,7 +159,7 @@ int main(){
 
 
 
-    index=0;
+    int index=0;
     while (stack1.size() > 0){
 
             if((enumRules[index]==stack1.top())){
@@ -193,18 +200,17 @@ int main(){
             
     }
 
-    std::ofstream fout;
-    fout.open("output.txt");
+    // std::ofstream fout;
+    // fout.open("output.txt");
 
-    //Print out results, can be changed to a file output
-    char output[256];
+    // //Print out results, can be changed to a file output
+    // char output[256];
 
-    for (int i=0; i < printOut.size(); i++){
-        fout << printOut[i];
-    }
+    // for (int i=0; i < printOut.size(); i++){
+    //     fout << printOut[i];
+    // }
 
-    fout.close();
- 
+    // fout.close();
 
     return true;
 }
@@ -228,6 +234,88 @@ std::string formatTL(std::vector<std::pair<std::string, std::string>> *list, int
     char output[256] = {0};
     sprintf(output, "Token: %-12s Lexeme: %s\n", (*list)[*index].second.c_str(), (*list)[*index].first.c_str());
     return std::string(output);
+}
+
+// Returns true if identifier is already in the symbol table
+bool symbol_check(std::string id){
+
+    // Try to access via "at" method, throws OOR if it doesn't exist
+    try{
+        sym_table.at(id);
+    }
+    catch (const std::out_of_range& oor){
+        return false;
+    }
+
+    return true;
+}
+
+// Adds identifier to symbol table with the current open address, and increments open address
+void symbol_insert(std::string id, std::string type){
+
+    // Set via key "id", pair memory_address and type. Increment memory_address
+    sym_table[id] = std::pair<unsigned int, std::string>(memory_address++, type);
+
+}
+
+// Prints all paired identifiers and memory addresses
+void symbol_printAll(){
+
+    // Array for sorted keys
+    std::string keys[sym_table.size()];
+
+    std::unordered_map<std::string, std::pair<unsigned int, std::string>>::iterator iter = sym_table.begin();
+
+    char output[256];
+    sprintf(output, "%29s \n", "Symbol Table");
+    std::cout << output;
+    sprintf(output, "%s \n", "-------------------------------------------------");
+    std::cout << output;
+    sprintf(output, "%-16s %-16s %-16s \n", "Identifier", "Memory Address", "Type");
+    std::cout << output;
+    sprintf(output, "%s \n", "-------------------------------------------------");
+    std::cout << output;
+
+    // Bucket sort keys by memory address value
+    for (iter; iter != sym_table.end(); iter++){
+
+        keys[iter->second.first - 5000] = iter->first;
+    }
+
+    // Print Elements
+    for (int i = 0; i < sym_table.size(); i++){
+
+        const char* s1 = keys[i].c_str();
+        const char* s2 = std::to_string(sym_table[keys[i]].first).c_str();
+        const char* s3 = sym_table[keys[i]].second.c_str();
+        sprintf(output, "%-16s %-16s %-16s \n", s1, s2, s3);
+        std::cout << output;
+    }
+
+}
+
+// Returns true if both identifiers are the same type
+bool symbol_typeMatch(std::string id1, std::string id2){
+    
+    return sym_table[id1].second == sym_table[id2].second;
+}
+
+// Returns true if the identifier matches the type
+bool symbol_typeCheck(std::string id, std::string tp){
+
+    return sym_table[id].second == tp;
+}
+
+// Returns identifier's defined type
+std::string symbol_getType(std::string id){
+
+    return sym_table[id].second;
+}
+
+// Returns identifier's allocated address
+unsigned int symbol_getAddress(std::string id){
+
+    return sym_table[id].first;
 }
 
 // Statement
