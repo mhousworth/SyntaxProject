@@ -130,11 +130,11 @@ int main(){
     
     //Convert lexemes to ENUM
     
-    std::vector<Symbols> enumRules; //created for holding enums
-    for(int i =0; i<length;i++ ){
-        //create vector of enums representing the lexemtokens
-        enumRules.push_back(stringtoSymbol(lexemeToken[i]));
-    }
+    // std::vector<Symbols> enumRules; //created for holding enums
+    // for(int i =0; i<length;i++ ){
+    //     //create vector of enums representing the lexemtokens
+    //     enumRules.push_back(stringtoSymbol(lexemeToken[i]));
+    // }
 
     //SET UP PARSING TABLE
     //map< Symbols, map<Symbols, > > table;
@@ -148,11 +148,17 @@ int main(){
     table[NTS_E][TS_L_PARENS] = 5;
     table[NTS_Eprime][TS_PLUS] = 6;
     table[NTS_Eprime][TS_MINUS] = 7;
+    table[NTS_Eprime][TS_R_PARENS] = 14;
+    table[NTS_Eprime][TS_SEMICOLON] = 14;
     table[NTS_T][TS_ID] = 8;
     table[NTS_T][TS_NUMBER] = 8;
     table[NTS_T][TS_L_PARENS] = 8;
     table[NTS_Tprime][TS_MULTIPLY] = 9;
     table[NTS_Tprime][TS_DIVIDE] = 10;
+    table[NTS_Tprime][TS_PLUS] = 14;
+    table[NTS_Tprime][TS_MINUS] = 14;
+    table[NTS_Tprime][TS_R_PARENS] = 14;
+    table[NTS_Tprime][TS_SEMICOLON] = 14;
     table[NTS_F][TS_ID] = 11;
     table[NTS_F][TS_NUMBER] = 12;
     table[NTS_F][TS_L_PARENS] = 13;
