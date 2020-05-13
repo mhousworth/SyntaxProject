@@ -163,12 +163,12 @@ int main(){
                 std::cout << "Rule " << table[stack1.top()][enumRules[index]] << std::endl;
                 switch (table[stack1.top()][enumRules[index]])
                 {
-                    case 1:	// 1. S → F
+                    case 1:	// 1. S → A
 					stack1.pop();
 					stack1.push(NTS_F);	// F
 					break;
 
-				    case 2:	// 2. S → ( S + F )
+				    case 2:	// 2. S → TS_TYPE
 					stack1.pop();
 					stack1.push(TS_R_PARENS);	// )
 					stack1.push(NTS_F);		// F
@@ -177,7 +177,7 @@ int main(){
 					stack1.push(TS_L_PARENS);	// (
 					break;
 
-				case 3:	// 3. F → a
+				case 3:	// 3. D → TS_TYPE
 					stack1.pop();
 					stack1.push(TS_A);	// a
 					break;
