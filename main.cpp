@@ -171,9 +171,14 @@ int main(){
 
     while (stack1.size() > 0){
 
-            if((stringtoSymbol(lexemeToken[index])==stack1.top())){
+            if(stringtoSymbol(lexemeToken[index]) == stack1.top()){
                 std::cout << "Matched Symbols: " << stringtoSymbol(lexemeToken[index]) << std::endl;
                 index++;
+                stack1.pop();
+            }
+            else if (TS_EOS == stack1.top()){
+                // TODO: Check if there is more in the lexer to parse
+                // For now pop and end
                 stack1.pop();
             }
             else
