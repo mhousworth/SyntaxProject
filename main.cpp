@@ -142,6 +142,8 @@ int main(){
     table[NTS_Eprime][TS_PLUS] = 6;
     table[NTS_Eprime][TS_MINUS] = 7;
     table[NTS_T][TS_ID] = 8;
+    table[NTS_T][TS_NUMBER] = 8;
+    table[NTS_T][TS_L_PARENS] = 8;
     table[NTS_Tprime][TS_MULTIPLY] = 9;
     table[NTS_Tprime][TS_DIVIDE] = 10;
     table[NTS_F][TS_ID] = 11;
