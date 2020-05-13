@@ -9,6 +9,62 @@
 #include "LexerProject/Lexer.h"
 #include <stack>
 
+//STRINGS
+/*
+ // Terminal symbols:
+        std::string TS_ID= "TS_ID";
+        std::string TS_TYPE= "TS_TYPE";
+        std::string TS_NUMBER= "TS_NUMBER";
+        std::string TS_PLUS= "TS_PLUS";
+        std::string TS_MINUS = "TS_MINUS";
+        std::string TS_MULTIPLY ="TS_MULTIPLY";
+        std::string TS_DIVIDE = "TS_DIVIDE";
+        std::string TS_L_PARENS = "TS_L_PARENS";
+        std::string TS_R_PARENS = "TS_R_PARENS";
+        std::string TS_SEMICOLON = "TS_SEMICOLON";		// a
+        std::string TS_EOS = "TS_EOS";		// $, in this case corresponds to '\0'
+        std::string TS_INVALID = "TS_INVALID";	// invalid token
+
+        // Non-terminal symbols:
+        std::string NTS_S= "NTS_S";		// S
+        std::string NTS_D= "NTS_D";
+        std::string NTS_A= "NTS_A";
+        std::string NTS_E= "NTS_E";
+        std::string NTS_Eprime= "NTS_Eprime";
+        std::string NTS_T= "NTS_T";
+        std::string NTS_Tprime= "NTS_Tprime";
+        std::string NTS_F=	"NTS_F";	// F
+  */
+
+//set up symbols
+    enum Symbols {
+        // the symbols:
+        //needs work
+        // Terminal symbols:
+        TS_ID,
+        TS_TYPE,
+        TS_NUMBER,
+        TS_PLUS,
+        TS_MINUS,
+        TS_MULTIPLY,
+        TS_DIVIDE,
+        TS_L_PARENS,	// (
+        TS_R_PARENS,	// )
+        TS_SEMICOLON,		// a
+        TS_EOS,		// $, in this case corresponds to '\0'
+        TS_INVALID,	// invalid token
+
+        // Non-terminal symbols:
+        NTS_S,		// S
+        NTS_D,
+        NTS_A,
+        NTS_E,
+        NTS_Eprime,
+        NTS_T,
+        NTS_Tprime,
+        NTS_F,		// F
+    };
+  
 // Flag for terminal print outs
 bool verbose = false;
 std::vector<std::string> printOut;
@@ -27,8 +83,14 @@ bool T_P(std::vector<std::pair<std::string, std::string>> *list, int *index);
 bool F(std::vector<std::pair<std::string, std::string>> *list, int *index);
 bool NUM(std::vector<std::pair<std::string, std::string>> *list, int *index);
 bool TYPE(std::vector<std::pair<std::string, std::string>> *list, int *index);
-//NEW FUNCTION FOR PARSING 
-//void parse(std::vector<std::pair<std::string, std::string>> *list, int *index);
+
+
+
+//
+// GLOBAL STACK
+std::stack<Symbols>	stack1;
+
+
 
 int main(){
 
@@ -38,7 +100,7 @@ int main(){
     Lexer Lex;
     
     //added stack of pairs
-	std::stack<std::pair<std::string, std::string>>	stack1;	// symbol stack
+	std::stack<Symbols>	stack1;	// symbol stack
 
     Lex.readFile(get_filename());
     // Lex.readFile("test.txt");
@@ -51,6 +113,84 @@ int main(){
 
     while((index < length) && S(&lexemeToken, &index));
 
+
+    //INITIALIZE STACK
+    //
+    //
+    stack1.push(TS_EOS);
+    stack1.push(NTS_S);
+    
+    
+    //Convert lexemes to ENUM
+    
+    std::vector<Symbols> enumRules; //created for holding enums
+    for(int i =0; i<length;i++ ){
+        //create vector of enums representing the lexemtokens
+        enumRules.push_back(stringtoSymbol(lexemeToken[i].first));
+    }
+
+    //SET UP PARSING TABLE
+    //map< Symbols, map<Symbols, > > table;
+    std::map< Symbols, std::map<Symbols, int>> table;
+    table[NTS_S][TS_ID] = 1;
+	table[NTS_S][TS_TYPE] = 2;
+	table[NTS_D][TS_TYPE] = 3;
+    table[NTS_A][TS_ID] = 4;
+    table[NTS_E][TS_ID] = 5;
+    table[NTS_E][TS_NUMBER] = 5;
+    table[NTS_E][TS_L_PARENS] = 5;
+    table[NTS_Eprime][TS_PLUS] = 6;
+    table[NTS_Eprime][TS_MINUS] = 7;
+    table[NTS_T][TS_ID] = 8;
+    table[NTS_Tprime][TS_MULTIPLY] = 9;
+    table[NTS_Tprime][TS_DIVIDE] = 10;
+    table[NTS_F][TS_ID] = 11;
+    table[NTS_F][TS_NUMBER] = 12;
+    table[NTS_F][TS_L_PARENS] = 13;
+
+
+
+    index=0;
+    while (stack1.size() > 0){
+
+            if((enumRules[index]==stack1.top())){
+                std::cout << "Matched Symbols: " <<enumRules[index] << std::endl;
+                index++;
+                stack1.pop();
+            }
+            else
+            {
+                std::cout << "Rule " << table[stack1.top()][enumRules[index]] << std::endl;
+                switch (table[stack1.top()][enumRules[index]])
+                {
+                    case 1:	// 1. S → F
+					stack1.pop();
+					stack1.push(NTS_F);	// F
+					break;
+
+				    case 2:	// 2. S → ( S + F )
+					stack1.pop();
+					stack1.push(TS_R_PARENS);	// )
+					stack1.push(NTS_F);		// F
+					stack1.push(TS_PLUS);	// +
+					stack1.push(NTS_S);		// S
+					stack1.push(TS_L_PARENS);	// (
+					break;
+
+				case 3:	// 3. F → a
+					stack1.pop();
+					stack1.push(TS_A);	// a
+					break;
+
+				default:
+					std::cout << "parsing table defaulted" << std::endl;
+					return 0;
+					break;
+                }
+            }
+            
+    }
+
     std::ofstream fout;
     fout.open("output.txt");
 
@@ -62,6 +202,7 @@ int main(){
     }
 
     fout.close();
+ 
 
     return true;
 }
@@ -836,11 +977,8 @@ bool TYPE(std::vector<std::pair<std::string, std::string>> *list, int *index){
 
 }
 
-void parse(std::vector<std::string> printOut, std::stack<std::pair<std::string, std::string>>&	stack1){
-    //int index = 0;
-    //int length = list.size();
 
-//set up symbols
+/*set up symbols
     enum Symbols {
         // the symbols:
         //needs work
@@ -868,21 +1006,31 @@ void parse(std::vector<std::string> printOut, std::stack<std::pair<std::string, 
         NTS_Tprime,
         NTS_F,		// F
     };
-//
-//setup parsing table
-
-std::map<Symbols, std::map<Symbols, int>> table;
-
-	std::stack<Symbols>	stack1;	// symbol stack
-    for (int i=0; i < printOut.size(); i++){
-
-
-//STEP 1 check if tos equals 
-     //if (printOut[i] == stack1.top())
-
-//STEP 2
-
-//STEP 3
-    //}
-    }
-}
+    */
+   Symbols stringtoSymbol(std::string input){
+        if (input=="S -> D" | input=="S -> A"){
+            return NTS_S;
+        }
+        else if (input=="A -> id = E"){
+            return NTS_A;
+        }
+        else if (input=="D -> type id"){
+            return NTS_D;
+        }
+        else if (input=="E -> TE'"){
+            return NTS_E;
+        }
+        else if (input=="E' -> +TE'"| input=="E' -> -TE" | input=="E'' -> epsilon"){
+            return NTS_Eprime;
+        }
+        else if (input=="T -> FT'"){
+            return NTS_T;
+        }
+        else if (input=="T' -> *FT'"| input=="T' -> /FT'" |input=="T' -> epsilon"){
+            return NTS_Tprime;
+        }
+        else if (input=="D -> type id"){
+            return NTS_F;
+        }
+   }
+   
