@@ -224,7 +224,7 @@ int main(){
                     }
                     else{
                         // Error: Identifier was not declared
-                        std::cout << "Identifier was not declared\n";
+                        std::cout << "Identifier: " << lexemeToken[index].first << " was not declared\n";
                     }
                 }
 
