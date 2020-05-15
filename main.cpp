@@ -281,105 +281,104 @@ int main(){
         else
         {
             std::cout << "Rule " << table[stack1.top()][stringtoSymbol(lexemeToken[index])] << std::endl;
-            switch (table[stack1.top()][stringtoSymbol(lexemeToken[index])])
-            {
-            case 1:	// 1. S → A
-                // Set Assignment Flag
-                AFLAG = true;
+            switch (table[stack1.top()][stringtoSymbol(lexemeToken[index])]){
+                case 1:	// 1. S → A
+                    // Set Assignment Flag
+                    AFLAG = true;
 
-                stack1.pop();
-                stack1.push(NTS_A);
-                break;
+                    stack1.pop();
+                    stack1.push(NTS_A);
+                    break;
 
-            case 2:	// 2. S → D
-                // Set Declaration Flag
-                DFLAG = true;
+                case 2:	// 2. S → D
+                    // Set Declaration Flag
+                    DFLAG = true;
 
-                stack1.pop();
-                stack1.push(NTS_D);		
-                break;
+                    stack1.pop();
+                    stack1.push(NTS_D);		
+                    break;
 
-            case 3:	// 3. D → type id;
-                stack1.pop();
-                stack1.push(TS_SEMICOLON);
-                stack1.push(TS_ID);
-                stack1.push(TS_TYPE);
-                break;
+                case 3:	// 3. D → type id;
+                    stack1.pop();
+                    stack1.push(TS_SEMICOLON);
+                    stack1.push(TS_ID);
+                    stack1.push(TS_TYPE);
+                    break;
+                    
+                case 4: // 4. A → id = E;
+                    stack1.pop();
+                    stack1.push(TS_SEMICOLON);
+                    stack1.push(NTS_E);
+                    stack1.push(TS_EQUAL);
+                    stack1.push(TS_ID);
+                    break;
+
+                case 5: // 5. E → TE'
+                    stack1.pop();
+                    stack1.push(NTS_Eprime);
+                    stack1.push(NTS_T);
+                    break;
+
+                case 6: // 6. E' → +TE'
+                    stack1.pop();
+                    stack1.push(NTS_Eprime);
+                    stack1.push(NTS_T);
+                    stack1.push(TS_PLUS);
+                    break;
+
+                case 7: // 7. E' → -TE'
+                    stack1.pop();
+                    stack1.push(NTS_Eprime);
+                    stack1.push(NTS_T);
+                    stack1.push(TS_MINUS);
+                    break;
+
+                case 8: // 8. T → FT'
+                    stack1.pop();
+                    stack1.push(NTS_Tprime);
+                    stack1.push(NTS_F);
+                    break;
+
+                case 9: // 9.  T' → *FT'
+                    stack1.pop();
+                    stack1.push(NTS_Tprime);
+                    stack1.push(NTS_F);
+                    stack1.push(TS_MULTIPLY);
+                    break;
+
+                case 10: // 10.  T' → /FT'
+                    stack1.pop();
+                    stack1.push(NTS_Tprime);
+                    stack1.push(NTS_F);
+                    stack1.push(TS_DIVIDE);
+                    break;
+
+                case 11: // 11. F → TS_ID
+                    stack1.pop();
+                    stack1.push(TS_ID);
+                    break;
+
+                case 12: // 12. F → TS_NUMBER
+                    stack1.pop();
+                    stack1.push(TS_NUMBER);
+                    break;
+
+                case 13: // 13. F → (E)
+                    stack1.pop();
+                    stack1.push(TS_R_PARENS);
+                    stack1.push(NTS_E);
+                    stack1.push(TS_L_PARENS);
+                    break;
+
+                case 14: // 14. EPSILON
+                    stack1.pop();
+                    break;
                 
-            case 4: // 4. A → id = E;
-                stack1.pop();
-                stack1.push(TS_SEMICOLON);
-                stack1.push(NTS_E);
-                stack1.push(TS_EQUAL);
-                stack1.push(TS_ID);
-                break;
 
-            case 5: // 5. E → TE'
-                stack1.pop();
-                stack1.push(NTS_Eprime);
-                stack1.push(NTS_T);
-                break;
-
-            case 6: // 6. E' → +TE'
-                stack1.pop();
-                stack1.push(NTS_Eprime);
-                stack1.push(NTS_T);
-                stack1.push(TS_PLUS);
-                break;
-
-            case 7: // 7. E' → -TE'
-                stack1.pop();
-                stack1.push(NTS_Eprime);
-                stack1.push(NTS_T);
-                stack1.push(TS_MINUS);
-                break;
-
-            case 8: // 8. T → FT'
-                stack1.pop();
-                stack1.push(NTS_Tprime);
-                stack1.push(NTS_F);
-                break;
-
-            case 9: // 9.  T' → *FT'
-                stack1.pop();
-                stack1.push(NTS_Tprime);
-                stack1.push(NTS_F);
-                stack1.push(TS_MULTIPLY);
-                break;
-
-            case 10: // 10.  T' → /FT'
-                stack1.pop();
-                stack1.push(NTS_Tprime);
-                stack1.push(NTS_F);
-                stack1.push(TS_DIVIDE);
-                break;
-
-            case 11: // 11. F → TS_ID
-                stack1.pop();
-                stack1.push(TS_ID);
-                break;
-
-            case 12: // 12. F → TS_NUMBER
-                stack1.pop();
-                stack1.push(TS_NUMBER);
-                break;
-
-            case 13: // 13. F → (E)
-                stack1.pop();
-                stack1.push(TS_R_PARENS);
-                stack1.push(NTS_E);
-                stack1.push(TS_L_PARENS);
-                break;
-
-            case 14: // 14. EPSILON
-                stack1.pop();
-                break;
-            
-
-            default:
-                std::cout << "parsing table defaulted" << std::endl;
-                return 0;
-                break;
+                default:
+                    std::cout << "parsing table defaulted" << std::endl;
+                    return 0;
+                    break;
             }
         }
     }
