@@ -1,33 +1,15 @@
-0Token: keyword      Lexeme: int
-1	S -> D
-2	D -> type id;
-3Token: identifier   Lexeme: a
-4Token: seperator    Lexeme: ;
-5Token: identifier   Lexeme: b
-6	S -> A
-7	A -> id = E;
-8Token: operator     Lexeme: =
-9Token: seperator    Lexeme: (
-10	E -> TE'
-11	T -> FT'
-12	F -> (E)
-13Token: identifier   Lexeme: e
-14	E -> TE'
-15	T -> FT'
-16	F -> id
-17Token: operator     Lexeme: +
-18	T' -> epsilon
-19	E' -> +TE'
-20Token: integer      Lexeme: 2
-21	T -> FT'
-22	F -> num
-23Token: operator     Lexeme: *
-24	T' -> *FT'
-25Token: identifier   Lexeme: c
-26	F -> id
-27Token: seperator    Lexeme: )
-28	T' -> epsilon
-29	E' -> epsilon
-30Token: seperator    Lexeme: ;
-31	T' -> epsilon
-32	E' -> epsilon
+Token                      Lexeme 
+---------------------------------- 
+keyword                       int 
+identifier                      a 
+seperator                       ; 
+identifier                      b 
+operator                        = 
+seperator                       ( 
+identifier                      e 
+operator                        + 
+integer                         2 
+operator                        * 
+identifier                      c 
+seperator                       ) 
+seperator                       ; 
