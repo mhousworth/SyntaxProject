@@ -67,6 +67,7 @@ bool symbol_typeMatch(std::string id1, std::string id2);
 bool symbol_typeCheck(std::string id, std::string tp);
 std::string symbol_getType(std::string id);
 unsigned int symbol_getAddress(std::string id);
+std::string keywordtoType(std::string keyword);
 
 Symbols stringtoSymbol(std::pair<std::string, std::string> input);
 
@@ -83,7 +84,6 @@ bool TYPE(std::vector<std::pair<std::string, std::string>> *list, int *index);
 
 
 
-//
 // GLOBAL STACK
 std::stack<Symbols>	stack1;
 
@@ -167,8 +167,14 @@ int main(){
     table[NTS_F][TS_L_PARENS] = 13;
 
 
-
     int index = 0;
+
+    // Boolean indicating Declaration
+    bool DFLAG = false;
+    // Boolean indicating Assignment, used only to get the identifier getting an assignment
+    bool AFLAG = false;
+    // Primary Identifier and type, either being declared or being assigned a value
+    std::pair<std::string, std::string> pSymbol("","");
 
     while (stack1.size() > 0){
 
@@ -181,6 +187,65 @@ int main(){
             }
         }
         else if(stringtoSymbol(lexemeToken[index]) == stack1.top()){
+
+            // Declaration Handling
+            if (DFLAG){
+
+                // Assign Symbol's Type
+                if(stringtoSymbol(lexemeToken[index]) == TS_TYPE){
+                    pSymbol.second = lexemeToken[index].first;
+                }
+                // Assign Symbol's Identifier
+                else if(stringtoSymbol(lexemeToken[index]) == TS_ID){
+                    pSymbol.first = lexemeToken[index].first;
+                }
+                // Try to add to Symbol Table
+                else if(stringtoSymbol(lexemeToken[index]) == TS_SEMICOLON){
+                    // Check if Declaration has already been made for identifier
+                    if(symbol_check(pSymbol.first)){
+                        // Error: Multiple Declarations
+                    }
+                    else{
+                        symbol_insert(pSymbol.first, keywordtoType(pSymbol.second));
+                    }
+
+                    DFLAG = false;
+                    pSymbol.first = "";
+                    pSymbol.second = "";
+                }
+            }
+            else if(AFLAG){
+                if(stringtoSymbol(lexemeToken[index]) == TS_ID){
+                    // Check if identifier is in the Symbol Table
+                    if(symbol_check(lexemeToken[index].first)){
+                        pSymbol.first = lexemeToken[index].first;
+                        pSymbol.second = symbol_getType(lexemeToken[index].first);
+                    }
+                    else{
+                        // Error: Identifier was not declared
+                    }
+                }
+
+                AFLAG = false;
+                pSymbol.first = "";
+                pSymbol.second = "";
+            }
+            else{
+                if(stringtoSymbol(lexemeToken[index]) == TS_ID){
+                    // Check if identifier is in the Symbol Table
+                    if(symbol_check(lexemeToken[index].first)){
+                        // Check if NOT matching types
+                        if(!symbol_typeMatch(pSymbol.first, lexemeToken[index].first)){
+                            // Error Different Types
+
+                        }
+                    }
+                }
+                else if((lexemeToken[index].second == "integer") || (lexemeToken[index].second == "float")){
+                    // Check Type Match
+                }
+            }
+
             std::cout << "Matched Symbols: " << stringtoSymbol(lexemeToken[index]) << std::endl;
             index++;
             stack1.pop();
@@ -201,11 +266,17 @@ int main(){
             switch (table[stack1.top()][stringtoSymbol(lexemeToken[index])])
             {
             case 1:	// 1. S → A
+                // Set Assignment Flag
+                AFLAG = true;
+
                 stack1.pop();
                 stack1.push(NTS_A);
                 break;
 
             case 2:	// 2. S → D
+                // Set Declaration Flag
+                DFLAG = true;
+
                 stack1.pop();
                 stack1.push(NTS_D);		
                 break;
@@ -306,6 +377,8 @@ int main(){
     // }
 
     // fout.close();
+
+    symbol_printAll();
 
     return true;
 }
@@ -411,6 +484,17 @@ std::string symbol_getType(std::string id){
 unsigned int symbol_getAddress(std::string id){
 
     return sym_table[id].first;
+}
+
+std::string keywordtoType(std::string keyword){
+    if(keyword == "int")
+        return "integer";
+    else if(keyword == "bool")
+        return "boolean";
+    else if(keyword == "float")
+        return keyword;
+    else
+        return "";
 }
 
 // Statement
