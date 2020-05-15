@@ -204,6 +204,7 @@ int main(){
                     // Check if Declaration has already been made for identifier
                     if(symbol_check(pSymbol.first)){
                         // Error: Multiple Declarations
+                        std::cout << "Multiple Declarations\n";
                     }
                     else{
                         symbol_insert(pSymbol.first, keywordtoType(pSymbol.second));
@@ -223,26 +224,43 @@ int main(){
                     }
                     else{
                         // Error: Identifier was not declared
+                        std::cout << "Identifier was not declared\n";
                     }
                 }
 
                 AFLAG = false;
-                pSymbol.first = "";
-                pSymbol.second = "";
             }
             else{
+                // Assigning via another identifier
                 if(stringtoSymbol(lexemeToken[index]) == TS_ID){
                     // Check if identifier is in the Symbol Table
                     if(symbol_check(lexemeToken[index].first)){
                         // Check if NOT matching types
                         if(!symbol_typeMatch(pSymbol.first, lexemeToken[index].first)){
                             // Error Different Types
-
+                            std::cout << "Different Types\n";
                         }
                     }
                 }
                 else if((lexemeToken[index].second == "integer") || (lexemeToken[index].second == "float")){
-                    // Check Type Match
+                    // Check if identifier is in the Symbol Table
+                    if(symbol_check(lexemeToken[index].first)){
+                        // Check Type Match
+                        if(!symbol_typeCheck(pSymbol.first, lexemeToken[index].second)){
+                            // Error Different Types
+                            std::cout << "Different Types\n";
+                        }
+                    }
+                }
+                else if(pSymbol.second == "boolean"){
+                    if(!(lexemeToken[index].first == "true") || !(lexemeToken[index].first == "false")){
+                        // Error Different Types
+                        std::cout << "Different Types\n";
+                    }
+                }
+                else if(stringtoSymbol(lexemeToken[index]) == TS_SEMICOLON){
+                    pSymbol.first = "";
+                    pSymbol.second = "";
                 }
             }
 
