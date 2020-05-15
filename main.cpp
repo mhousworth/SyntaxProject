@@ -59,7 +59,8 @@ std::string formatTL(std::vector<std::pair<std::string, std::string>> *list, int
 bool symbol_check(std::string id);
 void symbol_insert(std::string id, std::string type);
 void symbol_printAll();
-Symbols stringtoSymbol(std::pair<std::string, std::string> input);
+Symbols stringtoTerminal(std::pair<std::string, std::string> input);
+std::string terminaltoString(Symbols input);
 
 // Part 2 Helper Function
 
@@ -69,7 +70,7 @@ std::string symbol_getType(std::string id);
 unsigned int symbol_getAddress(std::string id);
 std::string keywordtoType(std::string keyword);
 
-Symbols stringtoSymbol(std::pair<std::string, std::string> input);
+Symbols stringtoTerminal(std::pair<std::string, std::string> input);
 
 bool S(std::vector<std::pair<std::string, std::string>> *list, int *index);
 bool D(std::vector<std::pair<std::string, std::string>> *list, int *index);
@@ -186,21 +187,40 @@ int main(){
                 // End of file reached with an incomplete Statement
             }
         }
-        else if(stringtoSymbol(lexemeToken[index]) == stack1.top()){
+        else if(stringtoTerminal(lexemeToken[index]) == stack1.top()){
+
+            // Printout symbol/terminal matches
+            std::cout << "Matched Symbols: ";
+
+            Symbols sym = stringtoTerminal(lexemeToken[index]);
+            std::string out = lexemeToken[index].first;
+            if (sym == TS_ID){
+                std::cout << "Identifier: " << out;
+            }
+            else if (sym == TS_TYPE){
+                std::cout << "Typedef: " << out;
+            }
+            else if (sym == TS_NUMBER){
+                std::cout << "Number: " << out;
+            }
+            else{
+                std::cout << out;
+            }
+            std::cout << std::endl;
 
             // Declaration Handling
             if (DFLAG){
 
                 // Assign Symbol's Type
-                if(stringtoSymbol(lexemeToken[index]) == TS_TYPE){
+                if(sym == TS_TYPE){
                     pSymbol.second = lexemeToken[index].first;
                 }
                 // Assign Symbol's Identifier
-                else if(stringtoSymbol(lexemeToken[index]) == TS_ID){
+                else if(sym == TS_ID){
                     pSymbol.first = lexemeToken[index].first;
                 }
                 // Try to add to Symbol Table
-                else if(stringtoSymbol(lexemeToken[index]) == TS_SEMICOLON){
+                else if(sym == TS_SEMICOLON){
                     // Check if Declaration has already been made for identifier
                     if(symbol_check(pSymbol.first)){
                         // Error: Multiple Declarations
@@ -215,8 +235,9 @@ int main(){
                     pSymbol.second = "";
                 }
             }
+            // Assignment Handling
             else if(AFLAG){
-                if(stringtoSymbol(lexemeToken[index]) == TS_ID){
+                if(sym == TS_ID){
                     // Check if identifier is in the Symbol Table
                     if(symbol_check(lexemeToken[index].first)){
                         pSymbol.first = lexemeToken[index].first;
@@ -230,9 +251,10 @@ int main(){
 
                 AFLAG = false;
             }
+            // Assignment Handling + Type Checking
             else{
                 // Assigning via another identifier
-                if(stringtoSymbol(lexemeToken[index]) == TS_ID){
+                if(sym == TS_ID){
                     // Check if identifier is in the Symbol Table
                     if(symbol_check(lexemeToken[index].first)){
                         // Check if NOT matching types
@@ -241,8 +263,13 @@ int main(){
                             std::cout << "Different Types\n";
                         }
                     }
+                    else{
+                        // Error: Identifier was not declared
+                        std::cout << "Identifier was not declared\n";
+                    }
                 }
-                else if((lexemeToken[index].second == "integer") || (lexemeToken[index].second == "float")){
+                // Assigning via numbers
+                else if(sym == TS_NUMBER){
                     // Check if identifier is in the Symbol Table
                     if(symbol_check(lexemeToken[index].first)){
                         // Check Type Match
@@ -258,13 +285,13 @@ int main(){
                         std::cout << "Different Types\n";
                     }
                 }
-                else if(stringtoSymbol(lexemeToken[index]) == TS_SEMICOLON){
+                else if(sym == TS_SEMICOLON){
                     pSymbol.first = "";
                     pSymbol.second = "";
                 }
             }
 
-            std::cout << "Matched Symbols: " << stringtoSymbol(lexemeToken[index]) << std::endl;
+            // Increment lexer and pop from stack
             index++;
             stack1.pop();
         }
@@ -280,8 +307,8 @@ int main(){
         }
         else
         {
-            std::cout << "Rule " << table[stack1.top()][stringtoSymbol(lexemeToken[index])] << std::endl;
-            switch (table[stack1.top()][stringtoSymbol(lexemeToken[index])]){
+            std::cout << "Rule " << table[stack1.top()][stringtoTerminal(lexemeToken[index])] << std::endl;
+            switch (table[stack1.top()][stringtoTerminal(lexemeToken[index])]){
                 case 1:	// 1. S → A
                     // Set Assignment Flag
                     AFLAG = true;
@@ -514,756 +541,6 @@ std::string keywordtoType(std::string keyword){
         return "";
 }
 
-// Statement
-// First(S)={type,id} Follow(S)={$}
-bool S(std::vector<std::pair<std::string, std::string>> *list, int *index){
-
-    // Check if index is within list bounds
-    if(*index < (*list).size()){
-        // Print current token/lexeme
-        printOut.push_back(formatTL(list, index));
-        if(verbose)
-            consolePrint();
-    }
-    // Error
-    else{
-        printOut.push_back("Syntax Error: Start of Statement expected a \"type\" or \"identifier\"\n");
-        if(verbose)
-            consolePrint();
-
-        return false;
-    }
-
-    // type
-    if (TYPE(list, index)){
-
-        // Print Rule
-        printOut.push_back("\tS -> D\n");
-        if(verbose)
-            consolePrint();
-        
-        // Call/Expand Non-Terminal, return result
-        return D(list, index);
-    }
-    // id
-    else if((*list)[*index].second == "identifier"){
-        
-        printOut.push_back("\tS -> A\n");
-        if(verbose)
-            consolePrint();
-        
-        // Call/Expand Non-Terminal, return result
-        return A(list, index);
-    }
-    // Error
-    else{
-        printOut.push_back("Syntax Error: Start of Statement expected a type or identifier\n");
-        if(verbose)
-            consolePrint();
-
-        return false;
-    }
-
-}
-
-// Declaration
-// First(D)={type} Follow(D)={$}
-bool D(std::vector<std::pair<std::string, std::string>> *list, int *index){
-
-    // type
-    if (TYPE(list, index)){
-        (*index)++;
-
-        // Print Rule
-        printOut.push_back("\tD -> type id;\n");
-        if(verbose)
-            consolePrint();
-
-        // Check if index is within list bounds
-        if(*index < (*list).size()){
-            // Print current token/lexeme
-            printOut.push_back(formatTL(list, index));
-            if(verbose)
-                consolePrint();
-        }
-        // Error
-        else{
-            printOut.push_back("Syntax Error: EOF: Declaration expected \"id\" and \";\" following \"type\"\n");
-            if(verbose)
-                consolePrint();
-
-            return false;
-        }
-
-        // id
-        if ((*list)[*index].second == "identifier"){
-            (*index)++;
-
-            // Check if index is within list bounds
-            if(*index < (*list).size()){
-                // Print current token/lexeme
-                printOut.push_back(formatTL(list, index));
-                if(verbose)
-                    consolePrint();
-            }
-            // Error
-            else{
-                printOut.push_back("Syntax Error: EOF: Declaration expected \";\" following Expression\n");
-                if(verbose)
-                    consolePrint();
-
-                return false;
-            }
-
-            // ;
-            if ((*list)[*index].first == ";"){
-                (*index)++;
-
-                // End of Declaration
-                return true;
-            }
-            else{
-            printOut.push_back("Syntax Error: Declaration expected \";\" following \"id\"\n");
-            if(verbose)
-                consolePrint();
-
-            return false;
-            }
-        }
-        else{
-            printOut.push_back("Syntax Error: Declaration expected \"id\" following \"type\"\n");
-            if(verbose)
-                consolePrint();
-
-            return false;
-        }
-    }
-    else{
-        printOut.push_back("Fatal Error: Unknown interuption at the start of Declaration\n");
-        if(verbose)
-            consolePrint();
-
-        return false;
-    }
-}
-
-// Assignment
-// First(A)={id} Follow(A)={$}
-bool A(std::vector<std::pair<std::string, std::string>> *list, int *index){
-
-    // id
-    if((*list)[*index].second == "identifier"){
-        (*index)++;
-
-        // Print Rule
-        printOut.push_back("\tA -> id = E;\n");
-        if(verbose)
-            consolePrint();
-
-        // Check if index is within list bounds
-        if(*index < (*list).size()){
-            // Print current token/lexeme
-            printOut.push_back(formatTL(list, index));
-            if(verbose)
-                consolePrint();
-        }
-        // Error
-        else{
-            printOut.push_back("Syntax Error: EOF: Assignment expected \"=\" and an Expression following \"id\"\n");
-            if(verbose)
-                consolePrint();
-
-            return false;
-        }
-
-        // =
-        if ((*list)[*index].first == "="){
-            (*index)++;
-
-            // Check if index is within list bounds
-            if(*index < (*list).size()){
-                // Print current token/lexeme
-                printOut.push_back(formatTL(list, index));
-                if(verbose)
-                    consolePrint();
-            }
-            // Error
-            else{
-                printOut.push_back("Syntax Error: EOF: Assignment expected an Expression following \"=\"\n");
-                if(verbose)
-                    consolePrint();
-
-                return false;
-            }
-            
-            // E
-            if (E(list, index)){
-
-                // Check if index is within list bounds
-                if(*index >= (*list).size()){
-                    printOut.push_back("Syntax Error: EOF: Assignment expected \";\" following Expression\n");
-                    if(verbose)
-                        consolePrint();
-
-                    return false;
-                }
-
-                // ;
-                if ((*list)[*index].first == ";"){
-                    (*index)++;
-
-                    // End of Assignment
-                    return true;
-                }
-                else{
-                    printOut.push_back("Syntax Error: Assignment expected \";\" following Expression\n");
-                    if(verbose)
-                        consolePrint();
-
-                    return false;
-                }
-            }
-            else{
-                // E Rules will have printed errors
-                return false;
-            }
-        }
-        else{
-            printOut.push_back("Syntax Error: Assignment expected \"=\" following \"id\"\n");
-            if(verbose)
-                consolePrint();
-
-            return false;
-        }
-    }
-    else{
-        printOut.push_back("Fatal Error: Unknown interuption at the start of Assignment\n");
-        if(verbose)
-            consolePrint();
-
-        return false;
-    }
-
-}
-
-// Expression
-// First(E)={(,id,num} Follow(E)={;,)}
-bool E(std::vector<std::pair<std::string, std::string>> *list, int *index){
-
-    // Check if index is within list bounds
-    if(*index >= (*list).size()){
-        printOut.push_back("Syntax Error: EOF: Start of Expression expected \"(\", \"id\", or \"num\"\n");
-        if(verbose)
-            consolePrint();
-
-        return false;
-    }
-
-    // (, id, num
-    if (((*list)[*index].first == "(") || ((*list)[*index].second == "identifier") || NUM(list, index)){
-
-        // Print Rule
-        printOut.push_back("\tE -> TE\'\n");
-        if(verbose)
-            consolePrint();
-        
-        // Call/Expand Non-Terminal
-        if (T(list, index)){
-
-            // Call/Expand Non-Terminal
-            if (E_P(list, index)){
-
-                //End of Expression
-                return true;
-            }
-        }
-        // Error Handled by Term
-        else
-            return false;
-    }
-    // Error
-    else{
-        printOut.push_back("Syntax Error: Start of Expression expected \"(\", \"id\", or \"num\"\n");
-            if(verbose)
-                consolePrint();
-
-            return false;
-    }
-}
-
-// Expression Prime
-// First(E')={+,-,epsilon} Follow(E')={;,)}
-bool E_P(std::vector<std::pair<std::string, std::string>> *list, int *index){
-
-    // Check if index is within list bounds
-    if(*index >= (*list).size()){
-        printOut.push_back("Syntax Error: EOF: Expression Prime expected \"+\", \"-\", \";\", or \")\"\n");
-        if(verbose)
-            consolePrint();
-
-        return false;
-    }
-
-    // First Set
-    // +
-    if ((*list)[*index].first == "+"){
-        (*index)++;
-
-        // Print Rule
-        printOut.push_back("\tE' -> +TE'\n");
-        if(verbose)
-            consolePrint();
-
-        // Check if index is within list bounds
-        if(*index < (*list).size()){
-            // Print current token/lexeme
-            printOut.push_back(formatTL(list, index));
-            if(verbose)
-                consolePrint();
-        }
-        // Error
-        else{
-            printOut.push_back("Syntax Error: EOF: Expression Prime expected Term following \"+\"\n");
-            if(verbose)
-                consolePrint();
-
-            return false;
-        }
-
-        // Call/Expand Non-Terminal
-        if(T(list, index)){
-
-            // Call/Expand Non-Terminal
-            if(E_P(list, index)){
-
-                // End of Expression Prime
-                return true;
-            }
-            // Error handled by recursive Expression Prime, otherwise hard to read
-            // else{
-            //     printOut.push_back("Syntax Error: Expression Prime expected Expression Prime following Term\n");
-            //     if(verbose)
-            //         consolePrint();
-
-            //     return false;
-            // }
-        }
-        // Error
-        else{
-            printOut.push_back("Syntax Error: Expression Prime expected Term following \"+\"\n");
-            if(verbose)
-                consolePrint();
-
-            return false;
-        }
-    }
-    else if ((*list)[*index].first == "-"){
-        (*index)++;
-
-        // Print Rule
-        printOut.push_back("\tE' -> -TE'\n");
-        if(verbose)
-            consolePrint();
-
-        // Check if index is within list bounds
-        if(*index < (*list).size()){
-            // Print current token/lexeme
-            printOut.push_back(formatTL(list, index));
-            if(verbose)
-                consolePrint();
-        }
-        // Error
-        else{
-            printOut.push_back("Syntax Error: EOF: Expression Prime expected Term following \"-\"\n");
-            if(verbose)
-                consolePrint();
-
-            return false;
-        }
-
-        // Call/Expand Non-Terminal
-        if(T(list, index)){
-
-            // Call/Expand Non-Terminal
-            if(E_P(list, index)){
-
-                // End of Expression Prime
-                return true;
-            }
-            // Error handled by recursive Expression Prime, otherwise hard to read
-            // else{
-            //     printOut.push_back("Syntax Error: Expression Prime expected Expression Prime following Term\n");
-            //     if(verbose)
-            //         consolePrint();
-
-            //     return false;
-            // }
-        }
-        // Error
-        else{
-            printOut.push_back("Syntax Error: Expression Prime expected Term following \"-\"\n");
-            if(verbose)
-                consolePrint();
-
-            return false;
-        }
-    }
-    // Follow Set
-    // ;, )
-    else if (((*list)[*index].first == ";") || ((*list)[*index].first == ")")){
-
-        // Print Rule
-        printOut.push_back("\tE' -> epsilon\n");
-        if(verbose)
-            consolePrint();
-
-        // End of Expression Prime
-        return true;
-    }
-    // Error
-    else{
-        printOut.push_back("Syntax Error: Expression Prime expected \"+\", \"-\", \";\", or \")\"\n");
-        if(verbose)
-            consolePrint();
-
-        return false;
-    }
-}
-
-// Term
-// First(T)={(,id,num} Follow(T)={+,-,;,)}
-bool T(std::vector<std::pair<std::string, std::string>> *list, int *index){
-
-    // Check if index is within list bounds
-    if(*index >= (*list).size()){
-        printOut.push_back("Syntax Error: EOF: Start of Term expected \"(\", \"id\", or \"num\"\n");
-        if(verbose)
-            consolePrint();
-
-        return false;
-    }
-
-    // (, id, num
-    if(((*list)[*index].first == "(") || ((*list)[*index].second == "identifier") || NUM(list, index)){
-        
-        // Print Rule
-        printOut.push_back("\tT -> FT\'\n");
-        if(verbose)
-            consolePrint();
-
-        // Call/Expand Non-Terminal
-        if (F(list, index))
-            
-            // Call/Expand Non-Terminal
-            if (T_P(list, index)){
-                
-                // End of Term
-                return true;
-            }
-            else{
-                return false;
-            }
-        else
-            return false;
-    }
-    // Error
-    else{
-        printOut.push_back("Fatal Error: Unknown interuption at the start of Term\n");
-        if(verbose)
-            consolePrint();
-
-        return false;
-    }
-
-}
-
-// Term Prime
-// First(T')={*,/,epsilon} Follow(T')={+.-.;,)}
-bool T_P(std::vector<std::pair<std::string, std::string>> *list, int *index){
-
-    // Check if index is within list bounds
-    if(*index >= (*list).size()){
-        printOut.push_back("Syntax Error: EOF: Term Prime expected \"*\", \"/\", \"+\", \"-\", \";\", or \")\"\n");
-        if(verbose)
-            consolePrint();
-
-        return false;
-    }
-
-    std::string lexeme = (*list)[*index].first;
-
-    // First of
-    // *
-    if (lexeme == "*"){
-        (*index)++;
-
-        // Print Rule
-        printOut.push_back("\tT' -> *FT'\n");
-        if(verbose)
-            consolePrint();
-
-        // Check if index is within list bounds
-        if(*index < (*list).size()){
-            // Print current token/lexeme
-            printOut.push_back(formatTL(list, index));
-            if(verbose)
-                consolePrint();
-        }
-        // Error
-        else{
-            printOut.push_back("Syntax Error: EOF: Term Prime expected Factor following \"*\"\n");
-            if(verbose)
-                consolePrint();
-
-            return false;
-        }
-
-        // Call/Expand Non-Terminal
-        if(F(list, index)){
-
-            // Call/Expand Non-Terminal
-            if(T_P(list, index)){
-
-                // End of Term Prime
-                return true;
-            }
-            // Error handled by recursive Term Prime, otherwise hard to read
-            // else{
-            //     printOut.push_back("Syntax Error: Term Prime expected Term Prime following Term\n");
-            //     if(verbose)
-            //         consolePrint();
-
-            //     return false;
-            // }
-        }
-        // Error
-        else{
-            printOut.push_back("Syntax Error: Term Prime expected Factor following \"*\"\n");
-            if(verbose)
-                consolePrint();
-
-            return false;
-        }
-    }
-    // /
-    else if (lexeme == "/"){
-        (*index)++;
-
-        // Print Rule
-        printOut.push_back("\tT' -> /FT'\n");
-        if(verbose)
-            consolePrint();
-
-        // Check if index is within list bounds
-        if(*index < (*list).size()){
-            // Print current token/lexeme
-            printOut.push_back(formatTL(list, index));
-            if(verbose)
-                consolePrint();
-        }
-        // Error
-        else{
-            printOut.push_back("Syntax Error: EOF: Term Prime expected Factor following \"/\"\n");
-            if(verbose)
-                consolePrint();
-
-            return false;
-        }
-
-        // Call/Expand Non-Terminal
-        if(F(list, index)){
-
-            // Call/Expand Non-Terminal
-            if(T_P(list, index)){
-
-                // End of Term Prime
-                return true;
-            }
-            // Error handled by recursive Term Prime, otherwise hard to read
-            // else{
-            //     printOut.push_back("Syntax Error: Term Prime expected Term Prime following Term\n");
-            //     if(verbose)
-            //         consolePrint();
-
-            //     return false;
-            // }
-        }
-        // Error
-        else{
-            printOut.push_back("Syntax Error: Term Prime expected Factor following \"/\"\n");
-            if(verbose)
-                consolePrint();
-
-            return false;
-        }
-    }
-    // Follow of
-    // +, -, ;, )
-    else if ((lexeme == "+") || (lexeme == "-") || (lexeme == ";") || (lexeme == ")")){
-
-        // Print Rule
-        printOut.push_back("\tT' -> epsilon\n");
-        if(verbose)
-            consolePrint();
-
-        // End of Term Prime
-        return true;
-    }
-    // Error
-    else{
-        printOut.push_back("Syntax Error: Term Prime expected \"*\", \"/\", \"+\", \"-\", \";\", or \")\"\n");
-        if(verbose)
-            consolePrint();
-
-        return false;
-    }
-}
-
-// Factor
-// First(F)={(,id,num} Follow(F)={*,/,+.-,;,)}
-bool F(std::vector<std::pair<std::string, std::string>> *list, int *index){
-
-    // (, id, num
-    if((*list)[*index].first == "("){
-        (*index)++;
-
-        // Print Rule
-        printOut.push_back("\tF -> (E)\n");
-        if(verbose)
-            consolePrint();
-
-        // Check if index is within list bounds
-        if(*index < (*list).size()){
-            // Print current token/lexeme
-            printOut.push_back(formatTL(list, index));
-            if(verbose)
-                consolePrint();
-        }
-        // Error
-        else{
-            printOut.push_back("Syntax Error: EOF: Factor expected Expression following \"(\"\n");
-            if(verbose)
-                consolePrint();
-
-            return false;
-        }
-
-        // Call/Expand Non-Terminal
-        if (E(list, index)){
-
-            // )
-            if ((*list)[*index].first == ")"){
-                (*index)++;
-
-                // Check if index is within list bounds
-                if(*index < (*list).size()){
-                    // Print current token/lexeme
-                    printOut.push_back(formatTL(list, index));
-                    if(verbose)
-                        consolePrint();
-                }
-                // Error Handled Elsewhere
-
-                // End of Factor
-                return true;
-            }
-            // Error
-            else{
-                printOut.push_back("Syntax Error: Factor expected \")\" following Expression\n");
-                if(verbose)
-                    consolePrint();
-
-                return false;
-            }
-        }
-        // Error
-        else{
-            printOut.push_back("Syntax Error: Factor expected Expression following \"(\"\n");
-            if(verbose)
-                consolePrint();
-
-            return false;
-        }
-    }
-    else if ((*list)[*index].second == "identifier"){
-        (*index)++;
-
-        // Print Rule
-        printOut.push_back("\tF -> id\n");
-        if(verbose)
-            consolePrint();
-
-        // Check if index is within list bounds
-        if(*index < (*list).size()){
-            // Print current token/lexeme
-            printOut.push_back(formatTL(list, index));
-            if(verbose)
-                consolePrint();
-        }
-        // Error Handled elsewhere
-
-        // End of Factor
-        return true;
-    }
-    else if (NUM(list, index)){
-        (*index)++;
-
-        // Print Rule
-        printOut.push_back("\tF -> num\n");
-        if(verbose)
-            consolePrint();
-        
-        // Print current token/lexeme
-        printOut.push_back(formatTL(list, index));
-        if(verbose)
-            consolePrint();
-
-        // End of Factor
-        return true;
-    }
-    // Error
-    else{
-        printOut.push_back("Fatal Error: Unknown interuption at the start of Factor\n");
-        if(verbose)
-            consolePrint();
-
-        return false;
-    }
-}
-
-// Number type check rather than a rule
-bool NUM(std::vector<std::pair<std::string, std::string>> *list, int *index){
-
-    std::string token = (*list)[*index].second;
-
-    if((token == "integer") || (token == "float"))
-        return true;
-
-    return false;
-}
-
-// Type check rather than a rule
-bool TYPE(std::vector<std::pair<std::string, std::string>> *list, int *index){
-
-    // Types are keywords
-    if((*list)[*index].second == "keyword"){
-
-        if((*list)[*index].first == "int"){
-            return true;
-        }
-        else if((*list)[*index].first == "float"){
-            return true;
-        }
-        else if((*list)[*index].first == "bool"){
-            return true;
-        }
-    }
-    
-    return false;
-
-}
-
-
 /*set up symbols
     enum Symbols {
         // the symbols:
@@ -1294,7 +571,7 @@ bool TYPE(std::vector<std::pair<std::string, std::string>> *list, int *index){
     };
     */
 
-Symbols stringtoSymbol(std::pair<std::string, std::string> input){
+Symbols stringtoTerminal(std::pair<std::string, std::string> input){
 
     if (input.second == "identifier"){
         return TS_ID;
@@ -1323,6 +600,5 @@ Symbols stringtoSymbol(std::pair<std::string, std::string> input){
         else if (input.first == ";")
             return TS_SEMICOLON;
     }
-
 }
    
