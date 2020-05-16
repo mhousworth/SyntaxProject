@@ -42,7 +42,7 @@ enum Symbols {
 };
   
 // Flag for terminal print outs
-bool verbose = false;
+bool verbose = true;
 std::vector<std::string> printOut;
 
 // Symbol Table Data, Key=Identifier, Data=Pair<MemoryAddress, Type>
@@ -85,7 +85,7 @@ int main(){
     Lexer Lex;
     
     // Added Stack of Enum Symbols
-	std::stack<Symbols>	stack1;
+	// std::stack<Symbols>	stack1;
 
     Lex.readFile(get_filename());
     // Lex.readFile("test.txt");
@@ -94,23 +94,6 @@ int main(){
     lexemeToken = Lex.getList();
 
     int length = lexemeToken.size();
-
-    // symbol_insert("a", "integer");
-    // symbol_insert("b", "boolean");
-    // symbol_insert("c", "integer");
-
-    // bool result = false;
-    // result = symbol_typeMatch("a", "c");
-    // result = symbol_typeMatch("a", "b");
-    // result = symbol_typeCheck("a", "integer");
-    // result = symbol_typeCheck("a", "boolean");
-
-    // std::cout << "a type: " + symbol_getType("a") + "\n";;
-    // std::cout << "a addr: " + std::to_string(symbol_getAddress("a")) + "\n";
-    // std::cout << "b type: " + symbol_getType("b") + "\n";
-    // std::cout << "b addr: " + std::to_string(symbol_getAddress("b")) + "\n";;
-
-    // symbol_printAll();
 
     //INITIALIZE STACK
     //
@@ -172,28 +155,35 @@ int main(){
             }
             else{
                 // End of file reached with an incomplete Statement
+                printOut.push_back("Incomplete Statement at End of File\n");
+                if(verbose)
+                    consolePrint();
+                break;
             }
         }
         else if(stringtoTerminal(lexemeToken[index]) == stack1.top()){
 
             // Printout symbol/terminal matches
-            std::cout << "Matched Symbols: ";
+            std::string printStr = "";
+            printStr += "Matched Symbols: ";
 
             Symbols sym = stringtoTerminal(lexemeToken[index]);
             std::string out = lexemeToken[index].first;
             if (sym == TS_ID){
-                std::cout << "Identifier: " << out;
+                printStr += "Identifier: " + out;
             }
             else if (sym == TS_TYPE){
-                std::cout << "Typedef: " << out;
+                printStr += "Typedef: " + out;
             }
             else if (sym == TS_NUMBER){
-                std::cout << "Number: " << out;
+                printStr += "Number: " + out;
             }
             else{
-                std::cout << out;
+                printStr += out;
             }
-            std::cout << std::endl;
+            printOut.push_back(printStr + "\n");
+            if(verbose)
+                consolePrint();
 
             // Declaration Handling
             if (DFLAG){
@@ -211,7 +201,9 @@ int main(){
                     // Check if Declaration has already been made for identifier
                     if(symbol_check(pSymbol.first)){
                         // Error: Multiple Declarations
-                        std::cout << "Multiple Declarations\n";
+                        printOut.push_back("Multiple Declarations of " + pSymbol.first + " found\n");
+                        if(verbose)
+                            consolePrint();
                     }
                     else{
                         symbol_insert(pSymbol.first, keywordtoType(pSymbol.second));
@@ -232,7 +224,9 @@ int main(){
                     }
                     else{
                         // Error: Identifier was not declared
-                        std::cout << "Identifier: " << lexemeToken[index].first << " was not declared\n";
+                        printOut.push_back("Identifier: " + lexemeToken[index].first + " was not declared\n");
+                        if(verbose)
+                            consolePrint();
                     }
                 }
 
@@ -247,12 +241,17 @@ int main(){
                         // Check if NOT matching types
                         if(!symbol_typeMatch(pSymbol.first, lexemeToken[index].first)){
                             // Error Different Types
-                            std::cout << "Different Types\n";
+                            std::string typeTwo = symbol_getType(lexemeToken[index].first);
+                            printOut.push_back("Different Types: " + pSymbol.first + " as " + pSymbol.second + " and " + lexemeToken[index].first + " as " + typeTwo + "\n");
+                            if(verbose)
+                                consolePrint();
                         }
                     }
                     else{
                         // Error: Identifier was not declared
-                        std::cout << "Identifier: " << lexemeToken[index].first << " was not declared\n";
+                        printOut.push_back("Identifier: " + lexemeToken[index].first + " was not declared\n");
+                        if(verbose)
+                            consolePrint();
                     }
                 }
                 // Assigning via numbers
@@ -262,14 +261,20 @@ int main(){
                         // Check Type Match
                         if(!symbol_typeCheck(pSymbol.first, lexemeToken[index].second)){
                             // Error Different Types
-                            std::cout << "Different Types\n";
+                            std::string typeTwo = symbol_getType(lexemeToken[index].first);
+                            printOut.push_back("Different Types: " + pSymbol.first + " as " + pSymbol.second + " and " + lexemeToken[index].first + " as " + typeTwo + "\n");
+                            if(verbose)
+                                consolePrint();
                         }
                     }
                 }
                 else if(pSymbol.second == "boolean"){
                     if(!(lexemeToken[index].first == "true") || !(lexemeToken[index].first == "false")){
                         // Error Different Types
-                        std::cout << "Different Types\n";
+                        std::string typeTwo = symbol_getType(lexemeToken[index].first);
+                        printOut.push_back("Different Types: " + pSymbol.first + " as " + pSymbol.second + " and " + lexemeToken[index].first + " as " + typeTwo + "\n");
+                        if(verbose)
+                            consolePrint();
                     }
                 }
                 else if(sym == TS_SEMICOLON){
@@ -294,9 +299,16 @@ int main(){
         }
         else
         {
-            std::cout << "Rule " << table[stack1.top()][stringtoTerminal(lexemeToken[index])] << std::endl;
+            printOut.push_back("Rule " + std::to_string(table[stack1.top()][stringtoTerminal(lexemeToken[index])]) + "\n");
+            if(verbose)
+                consolePrint();
+
             switch (table[stack1.top()][stringtoTerminal(lexemeToken[index])]){
                 case 1:	// 1. S → A
+                    printOut.push_back("    S → A\n");
+                    if(verbose)
+                        consolePrint();
+
                     // Set Assignment Flag
                     AFLAG = true;
 
@@ -305,6 +317,10 @@ int main(){
                     break;
 
                 case 2:	// 2. S → D
+                    printOut.push_back("    S → D\n");
+                    if(verbose)
+                        consolePrint();
+
                     // Set Declaration Flag
                     DFLAG = true;
 
@@ -313,6 +329,10 @@ int main(){
                     break;
 
                 case 3:	// 3. D → type id;
+                    printOut.push_back("    D → type id;\n");
+                    if(verbose)
+                        consolePrint();
+
                     stack1.pop();
                     stack1.push(TS_SEMICOLON);
                     stack1.push(TS_ID);
@@ -320,6 +340,10 @@ int main(){
                     break;
                     
                 case 4: // 4. A → id = E;
+                    printOut.push_back("    A → id = E;\n");
+                    if(verbose)
+                        consolePrint();
+
                     stack1.pop();
                     stack1.push(TS_SEMICOLON);
                     stack1.push(NTS_E);
@@ -328,12 +352,20 @@ int main(){
                     break;
 
                 case 5: // 5. E → TE'
+                    printOut.push_back("    E → TE`\n");
+                    if(verbose)
+                        consolePrint();
+
                     stack1.pop();
                     stack1.push(NTS_Eprime);
                     stack1.push(NTS_T);
                     break;
 
                 case 6: // 6. E' → +TE'
+                    printOut.push_back("    E` → +TE`\n");
+                    if(verbose)
+                        consolePrint();
+
                     stack1.pop();
                     stack1.push(NTS_Eprime);
                     stack1.push(NTS_T);
@@ -341,6 +373,10 @@ int main(){
                     break;
 
                 case 7: // 7. E' → -TE'
+                    printOut.push_back("    E` → -TE`\n");
+                    if(verbose)
+                        consolePrint();
+
                     stack1.pop();
                     stack1.push(NTS_Eprime);
                     stack1.push(NTS_T);
@@ -348,12 +384,20 @@ int main(){
                     break;
 
                 case 8: // 8. T → FT'
+                    printOut.push_back("    T → FT`\n");
+                    if(verbose)
+                        consolePrint();
+
                     stack1.pop();
                     stack1.push(NTS_Tprime);
                     stack1.push(NTS_F);
                     break;
 
                 case 9: // 9.  T' → *FT'
+                    printOut.push_back("    T` → *FT`\n");
+                    if(verbose)
+                        consolePrint();
+
                     stack1.pop();
                     stack1.push(NTS_Tprime);
                     stack1.push(NTS_F);
@@ -361,6 +405,10 @@ int main(){
                     break;
 
                 case 10: // 10.  T' → /FT'
+                    printOut.push_back("    T` → /FT`\n");
+                    if(verbose)
+                        consolePrint();
+
                     stack1.pop();
                     stack1.push(NTS_Tprime);
                     stack1.push(NTS_F);
@@ -368,16 +416,28 @@ int main(){
                     break;
 
                 case 11: // 11. F → TS_ID
+                    printOut.push_back("    F → id\n");
+                    if(verbose)
+                        consolePrint();
+
                     stack1.pop();
                     stack1.push(TS_ID);
                     break;
 
                 case 12: // 12. F → TS_NUMBER
+                    printOut.push_back("    F → num\n");
+                    if(verbose)
+                        consolePrint();
+
                     stack1.pop();
                     stack1.push(TS_NUMBER);
                     break;
 
                 case 13: // 13. F → (E)
+                    printOut.push_back("    F → (E)\n");
+                    if(verbose)
+                        consolePrint();
+
                     stack1.pop();
                     stack1.push(TS_R_PARENS);
                     stack1.push(NTS_E);
@@ -385,31 +445,35 @@ int main(){
                     break;
 
                 case 14: // 14. EPSILON
+                    printOut.push_back("    E` or T` → epsilon\n");
+                    if(verbose)
+                        consolePrint();
+
                     stack1.pop();
                     break;
                 
 
                 default:
-                    std::cout << "parsing table defaulted" << std::endl;
+                    printOut.push_back("Parsing table defaulted, indicating syntax error in current statement\n");
                     return 0;
                     break;
             }
         }
     }
 
-    // std::ofstream fout;
-    // fout.open("output.txt");
-
-    // //Print out results, can be changed to a file output
-    // char output[256];
-
-    // for (int i=0; i < printOut.size(); i++){
-    //     fout << printOut[i];
-    // }
-
-    // fout.close();
-
     symbol_printAll();
+
+    std::ofstream fout;
+    fout.open("output.txt");
+
+    //Print out results, can be changed to a file output
+    char output[256];
+
+    for (int i=0; i < printOut.size(); i++){
+        fout << printOut[i];
+    }
+
+    fout.close();
 
     return true;
 }
@@ -468,12 +532,16 @@ void symbol_printAll(){
     char output[256];
     sprintf(output, "%29s \n", "Symbol Table");
     std::cout << output;
+    printOut.push_back(output);
     sprintf(output, "%s \n", "-------------------------------------------------");
     std::cout << output;
+    printOut.push_back(output);
     sprintf(output, "%-16s %-16s %-16s \n", "Identifier", "Memory Address", "Type");
     std::cout << output;
+    printOut.push_back(output);
     sprintf(output, "%s \n", "-------------------------------------------------");
     std::cout << output;
+    printOut.push_back(output);
 
     // Bucket sort keys by memory address value
     for (iter; iter != sym_table.end(); iter++){
@@ -489,6 +557,7 @@ void symbol_printAll(){
         const char* s3 = sym_table[keys[i]].second.c_str();
         sprintf(output, "%-16s %-16s %-16s \n", s1, s2, s3);
         std::cout << output;
+        printOut.push_back(output);
     }
 
 }
