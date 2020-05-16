@@ -72,22 +72,9 @@ std::string keywordtoType(std::string keyword);
 
 Symbols stringtoTerminal(std::pair<std::string, std::string> input);
 
-bool S(std::vector<std::pair<std::string, std::string>> *list, int *index);
-bool D(std::vector<std::pair<std::string, std::string>> *list, int *index);
-bool A(std::vector<std::pair<std::string, std::string>> *list, int *index);
-bool E(std::vector<std::pair<std::string, std::string>> *list, int *index);
-bool E_P(std::vector<std::pair<std::string, std::string>> *list, int *index);
-bool T(std::vector<std::pair<std::string, std::string>> *list, int *index);
-bool T_P(std::vector<std::pair<std::string, std::string>> *list, int *index);
-bool F(std::vector<std::pair<std::string, std::string>> *list, int *index);
-bool NUM(std::vector<std::pair<std::string, std::string>> *list, int *index);
-bool TYPE(std::vector<std::pair<std::string, std::string>> *list, int *index);
-
-
 
 // GLOBAL STACK
 std::stack<Symbols>	stack1;
-
 
 
 int main(){
@@ -530,6 +517,7 @@ unsigned int symbol_getAddress(std::string id){
     return sym_table[id].first;
 }
 
+// Takes a key word lexeme and returns the Type for Token formatting
 std::string keywordtoType(std::string keyword){
     if(keyword == "int")
         return "integer";
@@ -541,36 +529,7 @@ std::string keywordtoType(std::string keyword){
         return "";
 }
 
-/*set up symbols
-    enum Symbols {
-        // the symbols:
-        //needs work
-        // Terminal symbols:
-        TS_ID,
-        TS_TYPE,
-        TS_NUMBER,
-        TS_PLUS,
-        TS_MINUS,
-        TS_MULTIPLY,
-        TS_DIVIDE,
-        TS_L_PARENS,	// (
-        TS_R_PARENS,	// )
-        TS_SEMICOLON,		// a
-        TS_EOS,		// $, in this case corresponds to '\0'
-        TS_INVALID,	// invalid token
-
-        // Non-terminal symbols:
-        NTS_S,		// S
-        NTS_D,
-        NTS_A,
-        NTS_E,
-        NTS_Eprime,
-        NTS_T,
-        NTS_Tprime,
-        NTS_F,		// F
-    };
-    */
-
+// Returns an Enum Symbols representation of a terminal/lexeme
 Symbols stringtoTerminal(std::pair<std::string, std::string> input){
 
     if (input.second == "identifier"){
